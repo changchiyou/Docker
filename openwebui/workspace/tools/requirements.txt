@@ -1,0 +1,12 @@
+# 股票分析
+finnhub-python
+requests
+aiohttp
+transformers
+torch
+beautifulsoup4
+pydantic
+
+# 網頁擷取
+requests
+pydantic

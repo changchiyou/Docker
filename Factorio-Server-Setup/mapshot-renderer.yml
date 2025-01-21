@@ -1,0 +1,21 @@
+services:
+  mapshot-renderer:
+    container_name: mapshot-renderer
+    image: factorio-mapshot:latest
+    volumes:
+      - ${FACTORIO_DIR_PATH}/saves:/opt-factorio-saves
+      - ${MAPSHOT_DIR_PATH}:/mapshot
+    environment:
+      RELEASE_TYPE: ${RELEASE_TYPE}
+      FACTORIO_USERNAME: ${FACTORIO_USERNAME}
+      FACTORIO_TOKEN: ${FACTORIO_TOKEN}
+      FACTORIO_SAVE: /opt-factorio-saves/${FACTORIO_SAVE}
+      MAPSHOT_AREA: ${MAPSHOT_AREA:-_all_}
+      MAPSHOT_JPEG_QUALITY: ${MAPSHOT_JPEG_QUALITY:-95}
+      MAPSHOT_MINIMUM_JPEG_QUALITY: ${MAPSHOT_MINIMUM_JPEG_QUALITY:-95}
+      MAPSHOT_MINIMUM_TILES: ${MAPSHOT_MINIMUM_TILES:-64}
+      MAPSHOT_MODE: "render"
+      MAPSHOT_SURFACES_TO_RENDER: ${MAPSHOT_SURFACES_TO_RENDER:-_all_}
+      MAPSHOT_VERBOSE_MAPSHOT_LOG_LEVEL_INT: ${MAPSHOT_VERBOSE_MAPSHOT_LOG_LEVEL_INT:-9}
+      MAPSHOT_INTERVAL: ${MAPSHOT_INTERVAL:-600}
+    restart: no

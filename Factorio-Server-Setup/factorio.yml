@@ -1,0 +1,42 @@
+services:
+  factorio:
+    container_name: Factorio
+    image: factoriotools/factorio:stable
+    environment:
+      CONSOLE_LOG_LOCATION: "/factorio/console.log"
+    ports:
+      - "34197:34197/udp"
+      - "27015:27015/tcp"
+    volumes:
+      - ${FACTORIO_DIR_PATH}:/factorio
+    restart: always
+    labels:
+      - "com.centurylinklabs.watchtower.scope=needupdate"
+    healthcheck:
+      test: ["CMD-SHELL", "grep -q 'Starting RCON interface at IP ADDR' /factorio/factorio-current.log || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 2s
+
+  factorigochatbot:
+    container_name: FactoriGOChatBot
+    image: mattie112/factorigo-chat-bot:latest
+    environment:
+      LOG_LEVEL: debug
+      DISCORD_TOKEN: "${FACTORIOGOCHATBOT_DISCORD_TOKEN}"
+      DISCORD_CHANNEL_ID: "${FACTORIOGOCHATBOT_DISCORD_CHANNEL_ID}"
+      RCON_IP: "factorio"
+      RCON_PORT: "${RCON_PORT-27015}"
+      RCON_PASSWORD: "${RCONPW}"
+      FACTORIO_LOG: "/opt-factorio/console.log"
+      ACHIEVEMENT_MODE: "true"
+      SEND_JOIN_LEAVE: "true"
+    volumes:
+      - ${FACTORIO_DIR_PATH}:/opt-factorio
+    restart: always
+    labels:
+      - "com.centurylinklabs.watchtower.scope=needupdate"
+    depends_on:
+      factorio:
+        condition: service_healthy

@@ -1,0 +1,44 @@
+[
+  {
+    "id": "網頁擷取",
+    "user_id": "29cdb3f9-ffa8-4978-9f0d-784a2796a858",
+    "name": "網頁擷取",
+    "content": "\"\"\"\ntitle: 網頁擷取\ndescription: 一款使用 Jina Reader 改進提取文本內容準確率的網頁擷取工具\nauthor: changchiyou\nauthor_url: https://github.com/changchiyou\ngithub: https://github.com/changchiyou\noriginal_author: ekatiyar\noriginal_author_url: https://github.com/ekatiyar/\noriginal_github: https://github.com/ekatiyar/open-webui-tools\nfunding_url: https://github.com/open-webui\nversion: 0.0.4\nlicense: MIT\n\"\"\"\n\nimport requests\nfrom typing import Callable, Any\nimport re\nfrom pydantic import BaseModel, Field\n\nimport unittest\n\n\ndef extract_title(text):\n    \"\"\"\n    Extracts the title from a string containing structured text.\n\n    :param text: The input string containing the title.\n    :return: The extracted title string, or None if the title is not found.\n    \"\"\"\n    match = re.search(r\"Title: (.*)\\n\", text)\n    return match.group(1).strip() if match else None\n\n\ndef clean_urls(text) -> str:\n    \"\"\"\n    Cleans URLs from a string containing structured text.\n\n    :param text: The input string containing the URLs.\n    :return: The cleaned string with URLs removed.\n    \"\"\"\n    return re.sub(r\"\\((http[^)]+)\\)\", \"\", text)\n\n\nclass EventEmitter:\n    def __init__(self, event_emitter: Callable[[dict], Any] = None):\n        self.event_emitter = event_emitter\n\n    async def progress_update(self, description):\n        await self.emit(description)\n\n    async def error_update(self, description):\n        await self.emit(description, \"error\", True)\n\n    async def success_update(self, description):\n        await self.emit(description, \"success\", True)\n\n    async def emit(self, description=\"Unknown State\", status=\"in_progress\", done=False):\n        if self.event_emitter:\n            await self.event_emitter(\n                {\n                    \"type\": \"status\",\n                    \"data\": {\n                        \"status\": status,\n                        \"description\": description,\n                        \"done\": done,\n                    },\n                }\n            )\n\n\nclass Tools:\n    class Valves(BaseModel):\n        DISABLE_CACHING: bool = Field(\n            default=False, description=\"Bypass Jina Cache when scraping\"\n        )\n        GLOBAL_JINA_API_KEY: str = Field(\n            default=\"\",\n            description=\"(Optional) Jina API key. Allows a higher rate limit when scraping. Used when a User-specific API key is not available.\",\n        )\n\n    class UserValves(BaseModel):\n        CLEAN_CONTENT: bool = Field(\n            default=True,\n            description=\"Remove links and image urls from scraped content. This reduces the number of tokens.\",\n        )\n        JINA_API_KEY: str = Field(\n            default=\"\",\n            description=\"(Optional) Jina API key. Allows a higher rate limit when scraping.\",\n        )\n\n    def __init__(self):\n        self.valves = self.Valves()\n        self.citation = True\n\n    async def web_scrape(\n        self,\n        url: str,\n        __event_emitter__: Callable[[dict], Any] = None,\n        __user__: dict = {},\n    ) -> str:\n        \"\"\"\n        Scrape and process a web page using r.jina.ai\n\n        :param url: The URL of the web page to scrape.\n        :return: The scraped and processed webpage content, or an error message.\n        \"\"\"\n        emitter = EventEmitter(__event_emitter__)\n\n        await emitter.progress_update(f\"Scraping {url}\")\n        jina_url = f\"https://r.jina.ai/{url}\"\n\n        headers = {\n            \"X-No-Cache\": \"true\" if self.valves.DISABLE_CACHING else \"false\",\n            \"X-With-Generated-Alt\": \"true\",\n        }\n\n        if \"valves\" in __user__ and __user__[\"valves\"].JINA_API_KEY:\n            headers[\"Authorization\"] = f\"Bearer {__user__['valves'].JINA_API_KEY}\"\n        elif self.valves.GLOBAL_JINA_API_KEY:\n            headers[\"Authorization\"] = f\"Bearer {self.valves.GLOBAL_JINA_API_KEY}\"\n\n        try:\n            response = requests.get(jina_url, headers=headers)\n            response.raise_for_status()\n\n            should_clean = \"valves\" not in __user__ or __user__[\"valves\"].CLEAN_CONTENT\n            if should_clean:\n                await emitter.progress_update(\"Received content, cleaning up ...\")\n            content = clean_urls(response.text) if should_clean else response.text\n\n            title = extract_title(content)\n            await emitter.success_update(\n                f\"Successfully Scraped {title if title else url}\"\n            )\n            return content\n\n        except requests.RequestException as e:\n            error_message = f\"Error scraping web page: {str(e)}\"\n            await emitter.error_update(error_message)\n            return error_message\n\n\nclass WebScrapeTest(unittest.IsolatedAsyncioTestCase):\n    async def test_web_scrape(self):\n        url = \"https://toscrape.com/\"\n        content = await Tools().web_scrape(url)\n        self.assertEqual(\"Scraping Sandbox\", extract_title(content))\n        self.assertEqual(len(content), 770)\n\n\nif __name__ == \"__main__\":\n    print(\"Running tests...\")\n    unittest.main()\n",
+    "specs": [
+      {
+        "name": "web_scrape",
+        "description": "Scrape and process a web page using r.jina.ai",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "str",
+              "description": "The URL of the web page to scrape."
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    ],
+    "meta": {
+      "description": "一款使用 Jina Reader 改進提取文本內容準確率的網頁擷取工具",
+      "manifest": {
+        "title": "網頁擷取",
+        "description": "一款使用 Jina Reader 改進提取文本內容準確率的網頁擷取工具",
+        "author": "changchiyou",
+        "author_url": "https://github.com/changchiyou",
+        "github": "https://github.com/changchiyou",
+        "original_author": "ekatiyar",
+        "original_author_url": "https://github.com/ekatiyar/",
+        "original_github": "https://github.com/ekatiyar/open-webui-tools",
+        "funding_url": "https://github.com/open-webui",
+        "version": "0.0.4",
+        "license": "MIT"
+      }
+    },
+    "updated_at": 1726730347,
+    "created_at": 1726730347
+  }
+]

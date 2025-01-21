@@ -1,0 +1,23 @@
+model_list:
+  - model_name: "[azure] gpt-3.5-turbo (0125)" ### Open WebUI RECEIVED MODEL NAME ###
+    litellm_params: # all params accepted by litellm.completion() - https://docs.litellm.ai/docs/completion/input
+      model: azure/gpt-35-turbo_0125 ### MODEL NAME sent to `litellm.completion()` (add `azure/` to specific azure as provider) ###
+      api_key: "os.environ/AZURE_API_KEY_REGION_2"
+      api_base: https://openai-model-test02.openai.azure.com/
+    model_info: # will be used for cost tracking - https://litellm.vercel.app/docs/routing#track-cost-for-azure-deployments
+      base_model: azure/gpt-3.5-turbo-0125 # ref: https://github.com/BerriAI/litellm/blob/816c925bdd955d58415a7b4e06eac40f70e58762/model_prices_and_context_window.json#L171
+  - model_name: "[azure] gpt-4 (0125-Preview)"
+    litellm_params:
+      model: azure/GPT-4_0125-Preview
+      api_key: "os.environ/AZURE_API_KEY_REGION_1"
+      api_base: https://openai-model-test01.openai.azure.com/
+    model_info:
+      base_model: azure/gpt-4-0125-preview # ref: https://github.com/BerriAI/litellm/blob/816c925bdd955d58415a7b4e06eac40f70e58762/model_prices_and_context_window.json#L102
+
+litellm_settings:
+  drop_params: True
+  success_callback: ["langfuse"]
+  failure_callback: ["langfuse"]
+
+general_settings:
+  master_key: "os.environ/MASTER_KEY"

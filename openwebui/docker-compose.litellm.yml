@@ -1,0 +1,28 @@
+services:
+  litellm-proxy:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: litellm-proxy
+    environment:
+      - "MASTER_KEY=${LITELLM_API_KEY}"
+      - "TRENDMICRO_API_KEY=${TRENDMICRO_API_KEY}"
+      - "TRENDMICRO_API_BASE=${TRENDMICRO_API_BASE}"
+      - "LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY}"
+      - "LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY}"
+      - "LANGFUSE_HOST=http://langfuse:3000"
+      - "LITELLM_LOG=DEBUG"
+    ports:
+      - ${LITELLM_PROXY_PORT-4000}:8000
+    volumes:
+      - ./litellm/config.yaml:/app/config.yaml
+      - ./litellm/custom_callbacks.py:/app/custom_callbacks.py
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    command: ["--config", "/app/config.yaml", "--port", "8000"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; exit() if requests.get('http://localhost:8000/health/readiness').status_code == 200 else exit(1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.scope=needupdate"

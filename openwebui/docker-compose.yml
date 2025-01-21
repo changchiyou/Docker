@@ -1,0 +1,51 @@
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    environment:
+      - "ENV=dev"
+      - "WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY}"
+      - "OPENAI_API_BASE_URLS=http://pipelines:9099"
+      - "OPENAI_API_KEYS=${PIPELINES_API_KEY}"
+      - "WEBHOOK_URL=${WEBHOOK_URL}"
+      - "WEBUI_NAME=${WEBUI_NAME}"
+      - "ENABLE_LITELLM=False"
+      - "ENABLE_OLLAMA_API=False"
+      - "BYPASS_MODEL_ACCESS_CONTROL=True"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    depends_on:
+      pipelines:
+        condition: service_healthy
+    ports:
+      - ${OPEN_WEBUI_PORT-5004}:8080
+    volumes:
+      - open-webui:/app/backend/data
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.scope=needupdate"
+
+  pipelines:
+    image: ghcr.io/open-webui/pipelines:main
+    container_name: pipelines
+    environment:
+      # litellm_manifold_pipeline.py
+      - "LITELLM_BASE_URL=https://litellm-openwebui.changchiyou.com"
+      - "LITELLM_API_KEY=${LITELLM_API_KEY}"
+      - "HIDDEN_LIST=${HIDDEN_LIST}"
+    ports:
+      - "9099:9099"
+    volumes:
+      - ./.data-pipelines:/app/pipelines
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9099"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    depends_on:
+      litellm-proxy:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  open-webui: {}

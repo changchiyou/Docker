@@ -1,0 +1,8 @@
+services:
+  app:
+    image: ry2x/for-wracademyreborn:latest
+    env_file:
+      - .env
+    container_name: reborn_wr
+    labels:
+      - "com.centurylinklabs.watchtower.scope=needupdate"

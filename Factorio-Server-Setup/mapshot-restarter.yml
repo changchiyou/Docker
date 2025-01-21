@@ -1,0 +1,24 @@
+services:
+  restarter:
+    container_name: mapshot-renderer-restarter
+    image: docker:cli
+    restart: unless-stopped
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    environment:
+      RESTART_TIMES: ${RESTART_TIMES:-"00 30"}
+      STOP_TIMEOUT: ${STOP_TIMEOUT:-10}
+    entrypoint: ["/bin/sh","-c"]
+    command: 
+      - |
+        while true; do
+          minute=$$(date +'%M');
+          for target_minute in $${RESTART_TIMES}; do
+            if [ "$$minute" = "$$target_minute" ]; then
+              docker stop --time=$${STOP_TIMEOUT} mapshot-renderer;
+              docker start mapshot-renderer;
+              break;
+            fi
+          done
+          sleep 60;
+        done

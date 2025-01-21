@@ -1,0 +1,14 @@
+services:
+  mapshot-server:
+    container_name: mapshot-server
+    build:
+      context: .
+      dockerfile: Dockerfile-mapshot
+    image: factorio-mapshot:latest
+    volumes:
+      - ${FACTORIO_DIR_PATH}/saves:/opt-factorio-saves
+      - ${MAPSHOT_DIR_PATH}:/mapshot
+    ports:
+      - "5005:8080"
+    environment:
+      MAPSHOT_MODE: "serve"
