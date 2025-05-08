@@ -7,6 +7,8 @@ services:
       - "WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY}"
       - "OPENAI_API_BASE_URLS=http://pipelines:9099"
       - "OPENAI_API_KEYS=${PIPELINES_API_KEY}"
+      # - "OPENAI_API_BASE_URLS=http://litellm-proxy:8000"
+      # - "OPENAI_API_KEYS=${LITELLM_API_KEY}"
       - "WEBHOOK_URL=${WEBHOOK_URL}"
       - "WEBUI_NAME=${WEBUI_NAME}"
       - "ENABLE_LITELLM=False"
@@ -30,7 +32,8 @@ services:
     container_name: pipelines
     environment:
       # litellm_manifold_pipeline.py
-      - "LITELLM_BASE_URL=https://litellm-openwebui.changchiyou.com"
+      # - "LITELLM_BASE_URL=https://litellm-openwebui.changchiyou.com"
+      - "LITELLM_BASE_URL=http://litellm-proxy:8000"
       - "LITELLM_API_KEY=${LITELLM_API_KEY}"
       - "HIDDEN_LIST=${HIDDEN_LIST}"
     ports:

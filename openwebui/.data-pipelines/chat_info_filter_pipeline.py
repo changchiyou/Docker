@@ -72,4 +72,7 @@ class Pipeline:
                 print(f"Error: user & body[\"user\"] are both None")
         else:
             print("Error: can't find 'chat_id' in 'body'")
+
+        body["custom_metadata"]["tags"] = ["litellm-openwebui.changchiyou.com"]
+
         return body
