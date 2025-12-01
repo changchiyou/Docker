@@ -13,6 +13,7 @@ services:
       - "WEBUI_NAME=${WEBUI_NAME}"
       - "ENABLE_LITELLM=False"
       - "ENABLE_OLLAMA_API=False"
+      - "ENABLE_WEBSOCKET_SUPPORT=False"
       - "BYPASS_MODEL_ACCESS_CONTROL=True"
     extra_hosts:
       - host.docker.internal:host-gateway
@@ -32,10 +33,10 @@ services:
     container_name: pipelines
     environment:
       # litellm_manifold_pipeline.py
-      # - "LITELLM_BASE_URL=https://litellm-openwebui.changchiyou.com"
       - "LITELLM_BASE_URL=http://litellm-proxy:8000"
       - "LITELLM_API_KEY=${LITELLM_API_KEY}"
       - "HIDDEN_LIST=${HIDDEN_LIST}"
+      - "REPLACE_PREFIX=${REPLACE_PREFIX}"
     ports:
       - "9099:9099"
     volumes:

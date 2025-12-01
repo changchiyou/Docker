@@ -1,55 +1,16 @@
 model_list:
-  - model_name: "gpt-4o"
+  - model_name: openai/*
     litellm_params:
-      model: openai/gpt-4o
-      api_key: os.environ/TRENDMICRO_API_KEY
-      api_base: os.environ/TRENDMICRO_API_BASE
-  - model_name: "gpt-4o-mini"
-    litellm_params:
-      model: openai/gpt-4o-mini
-      api_key: os.environ/TRENDMICRO_API_KEY
-      api_base: os.environ/TRENDMICRO_API_BASE
-  - model_name: "gpt-4.1"
-    litellm_params:
-      model: openai/gpt-4.1
-      api_key: os.environ/TRENDMICRO_API_KEY
-      api_base: os.environ/TRENDMICRO_API_BASE
-  - model_name: "gpt-4.1-mini"
-    litellm_params:
-      model: openai/gpt-4.1-mini
-      api_key: os.environ/TRENDMICRO_API_KEY
-      api_base: os.environ/TRENDMICRO_API_BASE
-  - model_name: "gpt-4.1-nano"
-    litellm_params:
-      model: openai/gpt-4.1-nano
-      api_key: os.environ/TRENDMICRO_API_KEY
-      api_base: os.environ/TRENDMICRO_API_BASE
-  - model_name: "tts-1"
-    litellm_params:
-      model: tts-1
-      api_key: os.environ/TRENDMICRO_API_KEY
-      api_base: os.environ/TRENDMICRO_API_BASE
-  - model_name: "tts-1-hd"
-    litellm_params:
-      model: tts-1-hd
-      api_key: os.environ/TRENDMICRO_API_KEY
-      api_base: os.environ/TRENDMICRO_API_BASE
-  - model_name: "whisper-1"
-    litellm_params:
-      model: whisper-1
-      api_key: os.environ/TRENDMICRO_API_KEY
-      api_base: os.environ/TRENDMICRO_API_BASE
-  - model_name: "text-embedding-3-small"
-    litellm_params:
-      model: openai/text-embedding-3-small
+      model: openai/*
       api_key: os.environ/TRENDMICRO_API_KEY
       api_base: os.environ/TRENDMICRO_API_BASE
 
 litellm_settings:
-  drop_params: True
+  drop_params: true
   success_callback: ["langfuse"]
   failure_callback: ["langfuse"]
   callbacks: custom_callbacks.proxy_handler_instance
+  check_provider_endpoint: true
 
 general_settings:
   master_key: "os.environ/MASTER_KEY"

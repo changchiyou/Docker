@@ -21,6 +21,7 @@ class Pipeline:
         LITELLM_API_KEY: str = ""
         LITELLM_PIPELINE_DEBUG: bool = False
         HIDDEN_LIST: list[str] = []
+        REPLACE_PREFIX: str = ""
 
     def __init__(self):
         # You can also set the pipelines that are available in this pipeline.
@@ -46,7 +47,8 @@ class Pipeline:
                 ),
                 "LITELLM_API_KEY": os.getenv("LITELLM_API_KEY", "your-api-key-here"),
                 "LITELLM_PIPELINE_DEBUG": os.getenv("LITELLM_PIPELINE_DEBUG", True),
-                "HIDDEN_LIST": os.getenv("HIDDEN_LIST", "").split(",")
+                "HIDDEN_LIST": os.getenv("HIDDEN_LIST", "").split(","),
+                "REPLACE_PREFIX": os.getenv("REPLACE_PREFIX", "")
             }
         )
         # Get models on initialization
@@ -73,6 +75,11 @@ class Pipeline:
 
     def get_litellm_models(self):
 
+        def strip_prefix(model_id: str) -> str:
+            if model_id.startswith(self.valves.REPLACE_PREFIX):
+                model_id = model_id.replace(self.valves.REPLACE_PREFIX, "")
+            return model_id
+
         headers = {}
         if self.valves.LITELLM_API_KEY:
             headers["Authorization"] = f"Bearer {self.valves.LITELLM_API_KEY}"
@@ -83,12 +90,14 @@ class Pipeline:
                     f"{self.valves.LITELLM_BASE_URL}/v1/models", headers=headers
                 )
                 models = r.json()
+                print(models)
                 return [
                     {
-                        "id": model["id"],
-                        "name": model["name"] if "name" in model else model["id"],
+                        "id": strip_prefix(model["id"]),
+                        "name": strip_prefix(model.get("name", model["id"])),
                     }
-                    for model in models["data"] if model["id"] not in self.valves.HIDDEN_LIST
+                    for model in models["data"]
+                    if strip_prefix(model["id"]) not in self.valves.HIDDEN_LIST + ["*"]
                 ]
             except Exception as e:
                 print(f"Error fetching models from LiteLLM: {e}")
@@ -109,6 +118,7 @@ class Pipeline:
             print("######################################")
             print(f'# User: {body["user"]["name"]} / {body["user"]["email"]}')
             print(f"# Message: {user_message}")
+            print(f"# Model ID: {model_id}")
             print("######################################")
 
         headers = {}
@@ -116,7 +126,7 @@ class Pipeline:
             headers["Authorization"] = f"Bearer {self.valves.LITELLM_API_KEY}"
 
         try:
-            payload = {**body, "model": model_id}
+            payload = {**body, "model": self.valves.REPLACE_PREFIX + model_id}
 
             payload.pop("chat_id", None)
             payload.pop("user", None)
