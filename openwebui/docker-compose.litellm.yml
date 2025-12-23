@@ -11,11 +11,14 @@ services:
       - "LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY}"
       - "LANGFUSE_HOST=http://langfuse:3000"
       - "LITELLM_LOG=${LITELLM_LOG}"
+      - "DATABASE_URL=postgresql://${LITELLM_POSTGRES_USER}:${LITELLM_POSTGRES_PASSWORD}@db:5432/${LITELLM_POSTGRES_DB}"
+      - "STORE_MODEL_IN_DB=True" # allows adding models to proxy via UI"
+    depends_on:
+      - db  # Indicates that this service depends on the 'db' service, ensuring 'db' starts first
     ports:
       - ${LITELLM_PROXY_PORT-4000}:8000
     volumes:
       - ./litellm/config.yaml:/app/config.yaml
-      - ./litellm/custom_callbacks.py:/app/custom_callbacks.py
     extra_hosts:
       - host.docker.internal:host-gateway
     command: ["--config", "/app/config.yaml", "--port", "8000"]
@@ -28,3 +31,26 @@ services:
     restart: unless-stopped
     labels:
       - "com.centurylinklabs.watchtower.scope=needupdate"
+
+  db:
+    image: postgres:16
+    restart: always
+    container_name: litellm_db
+    environment:
+      POSTGRES_DB: "${LITELLM_POSTGRES_DB}"
+      POSTGRES_USER: "${LITELLM_POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${LITELLM_POSTGRES_PASSWORD}"
+    ports:
+      - ${LITELLM_POSTGRES_PORT-5432}:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persists Postgres data across container restarts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d litellm -U llmproxy"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+    labels:
+      - "com.centurylinklabs.watchtower.scope=needupdate"
+
+volumes:
+  postgres_data: {}
