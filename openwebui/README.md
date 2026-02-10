@@ -1,6 +1,4 @@
-# FTC GPT
-
-FTC GPT employs Azure OpenAI to mitigate the risk of internal data leakage during the use of ChatGPT, safeguarding important information from being utilized in OpenAI's training datasets by our company colleagues.
+# Local GPT stack
 
 ## Installation
 
@@ -67,7 +65,6 @@ graph TB
             direction TB
             OW[Open WebUI]
             AO[Azure OpenAI]
-            Langfuse
             LiteLLM
             subgraph Pipelines
                 direction LR
@@ -95,4 +92,8 @@ graph TB
     style note text-align: left
 ```
 
+## List all modules
+
+```bash
+source .env 2>/dev/null && curl -s -X GET "$TRENDMICRO_API_BASE/models" -H "Authorization: Bearer $TRENDMICRO_API_KEY" -H "Content-Type: application/json" | jq -r '.data[].id' | sort
 ```
