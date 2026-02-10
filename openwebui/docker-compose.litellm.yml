@@ -2,6 +2,7 @@ services:
   litellm-proxy:
     # image: ghcr.io/berriai/litellm:main-latest
     image: changchiyou/litellm:latest
+    # image: harbor.fawenyo.com/library/litellm:latest
     container_name: litellm-proxy
     environment:
       - "MASTER_KEY=${LITELLM_API_KEY}"
@@ -24,10 +25,10 @@ services:
     command: ["--config", "/app/config.yaml", "--port", "8000"]
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 http://localhost:8000/health/liveliness || exit 1" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      interval: 30s  # Perform health check every 30 seconds
+      timeout: 10s   # Health check command times out after 10 seconds
+      retries: 3     # Retry up to 3 times if health check fails
+      start_period: 40s  # Wait 40 seconds after container start before beginning health checks
     restart: unless-stopped
     labels:
       - "com.centurylinklabs.watchtower.scope=needupdate"

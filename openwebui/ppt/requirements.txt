@@ -1,5 +1,0 @@
-flask
-Flask-Cors
-openai
-python-pptx
-requests
