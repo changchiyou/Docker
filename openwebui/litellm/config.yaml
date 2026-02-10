@@ -8,6 +8,7 @@ model_list:
 litellm_settings:
   drop_params: true
   check_provider_endpoint: true
+  callbacks: ["custom_callbacks.proxy_handler_instance"]
 
 general_settings:
   master_key: "os.environ/MASTER_KEY"
